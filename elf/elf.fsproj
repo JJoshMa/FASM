@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="./header/MagicHeader.fs" />
     <Compile Include="Library.fs" />
   </ItemGroup>
 

@@ -1,4 +1,4 @@
-﻿namespace elf
+﻿namespace Elf
 
 module Say =
     let hello name =
