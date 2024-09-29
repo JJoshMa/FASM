@@ -13,3 +13,4 @@ riderModule.iml
 
 ./**/bin
 ./**/obj */
+.fake
