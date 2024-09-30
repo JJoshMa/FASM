@@ -1,4 +1,4 @@
-module Elf.Header.EiDentHeader
+module Elf.Header.FileHeader
 
 open System
 
@@ -7,9 +7,11 @@ type EIClass =
     | ElfClass32 = 0x01uy
     | ElfClass64 = 0x02uy
 
-/// ElfDataNone: 无效数据编码
-/// ElfData2LSB: 小端
-/// ElfData2MSB: 大端
+(* 
+    ElfDataNone: 无效数据编码
+    ElfData2LSB: 小端
+    ElfData2MSB: 大端   
+*)
 type EIData =
     | ElfDataNone = 0x00uy
     | ElfData2LSB = 0x01uy
@@ -36,56 +38,61 @@ type EMachine =
 type EVersion = 
     | Default = 0x01s
 
-/// 虚拟内存地址偏移量程序的入口
-/// 32位 0x08048000
-/// 64位 0x400000
-///   x86-64架构的Linux系统中，可执行文件的默认加载基址通常是0x400000.
-///   这是因为ELF标准规定了64位程序的最低有效地址是0x400000
-///   gcc: 通常使用 0x1040 这个地址
-///   tiny cc: 使用 0x600000
+(*
+    虚拟内存地址偏移量程序的入口
+    32位 0x08048000
+    64位 0x400000
+        x86-64架构的Linux系统中，可执行文件的默认加载基址通常是0x400000.
+        这是因为ELF标准规定了64位程序的最低有效地址是0x400000
+        gcc: 通常使用 0x1040 这个地址
+        tiny cc: 使用 0x600000
+*)
 type EEntry = | Bytes of array<byte>
 
-/// program headers begin
-/// 程序头的开始位置
+(*
+    program headers begin
+    程序头的开始位置
+*)
 type EPhoff = | Bytes of array<byte>
 
-/// section headers begin 
-/// 段的开始位置
+(* 
+    section headers begin 
+    段的开始位置
+ *)
 type EShoff = | Bytes of array<byte>
 
-/// 0x00000000 for x86
-/// Represents the EFlags register for x86 architecture.
+
+(*
+    0x00000000 for x86
+    Represents the EFlags register for x86 architecture.
+*)
 type EFlags = 
     { Bytes: byte array }
 
 module EFlags =
-    /// Initializes an EFlags instance with all bytes set to zero.
     let init() : EFlags =
         { Bytes = [| 0x00uy; 0x00uy; 0x00uy; 0x00uy |] }
  
-/// Represents the size of EEH in bytes.
+(*
+    Represents the size of EEH in bytes.
+*)
 type EEHSize = 
     { Size: byte array }
 
 module EEHSize =
-    /// Returns the EEH size for 32-bit systems.
     let getSys32() = 
         { Size = [| 0x34uy; 0x00uy |] }
 
-    /// Returns the EEH size for 64-bit systems.
     let getSys64() = 
         { Size = [| 0x40uy; 0x00uy |] }
 
-/// Represents the size of program header entry in bytes.
 type EPhentSize = 
     { Size: byte array }
 
 module EPhentSize =
-    /// Returns the program header entry size for 32-bit systems.
     let getSys32() = 
         { Size = [| 0x20uy; 0x00uy |] }
 
-    /// Returns the program header entry size for 64-bit systems.
     let getSys64() = 
         { Size = [| 0x38uy; 0x00uy |] }
 
@@ -112,31 +119,47 @@ module EShNum =
 type EShstrndx = 
     { Index: byte array }
 
-type FileHeader =
-    struct
-        // 0x7f
-        val EiMag0: byte
-        // 'E'
-        val EiMag1: byte 
-        // 'L'
-        val EiMag2: byte 
-        // 'F'
-        val EiMag3: byte 
-        val EiClass: EIClass
-        val EiData: EIData
-        val EiVersion: EIVersion
-        val EiOSAbi: EIAbiVersion
-        val EiPad: EIPad
-        val EType: EType
-        val EEntry: EEntry
 
-        val EPhoff: EPhoff
-        val EFlags: EFlags
-
-        val EEhSize: EEHSize
-        val EPhentSize: EPhentSize
-        val EPhNum: EPhNum
-        val EShentSize:EShentSize
-        val EShNum: EShNum
-        val EShstrndx: EShstrndx
-    end
+type FileHeader = 
+    { EiMag0: byte
+      EiMag1: byte 
+      EiMag2: byte 
+      EiMag3: byte 
+      mutable EIClass: EIClass option  
+      mutable EIData: EIData option
+      mutable EIVersion: EIVersion option
+      mutable EIAbiVersion: EIAbiVersion option
+      mutable EIPad: EIPad option
+      mutable EType: EType option
+      mutable EEntry: EEntry option
+      mutable EPhoff: EPhoff option
+      mutable EFlags: EFlags option
+      mutable EEHSize: EEHSize option
+      mutable EPhentSize: EPhentSize option
+      mutable EPhNum: EPhNum option
+      mutable EShentSize: EShentSize option
+      mutable EShNum: EShNum option
+      mutable EShstrndx: EShstrndx option }
+    
+    static member make (?eiClass,?eiData,?eiVersion,?eiAbiVersion,?eiPad,?eType,
+                        ?eEntry,?ePhoff,?eFlags,?eEhSize,?ePhentSize,?ePhNum,
+                        ?eShentSize,?eShNum,?eShstrndx) = 
+        {  EiMag0 = 0x7Fuy
+           EiMag1 = 0x45uy
+           EiMag2 = 0x4Cuy
+           EiMag3 = 0x46uy
+           EIClass = eiClass
+           EIData = eiData
+           EIVersion = eiVersion
+           EIAbiVersion = eiAbiVersion
+           EIPad = eiPad
+           EType = eType
+           EEntry = eEntry
+           EPhoff = ePhoff
+           EFlags = eFlags
+           EEHSize = eEhSize
+           EPhentSize = ePhentSize
+           EPhNum = ePhNum
+           EShentSize = eShentSize
+           EShNum = eShNum
+           EShstrndx = eShstrndx }

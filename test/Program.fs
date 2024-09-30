@@ -1,21 +1,38 @@
 ﻿// For more information see https://aka.ms/fsharp-console-apps
+open System.IO
+open Elf.Header.FileHeader
 
-module test = 
-    open Elf
-    open System.IO
+let bytesToHex (bytes: byte array) : string =
+    bytes |> Array.map (fun b -> sprintf "%02X" b) |> String.concat " "
 
-    let writeInt16ToFile (filePath: string) (value: int16) =
-        // 使用 FileStream 和 BinaryWriter 来写入 int16 值
-        use fs = new FileStream(filePath, FileMode.Create, FileAccess.Write)
-        use writer = new BinaryWriter(fs)
-        
-        writer.Write(value)
+let byteToHex (bytes: byte) : string =
+    sprintf "%02X" bytes 
+
 
 let main () =
-    let filePath = "output.bin"  // 文件路径
-    let valueToWrite  = int16 12345  // 要写入的 int16 值
+
+    let fileHeader = FileHeader.make()
+
+
+
+    let filePath = "test"
+    let valueToWrite  = int16 0x34 
+
+    let fs = new FileStream(filePath, FileMode.Create,FileAccess.ReadWrite)
+    let writer = new BinaryWriter(fs)
+    writer.Write valueToWrite
     
-    test.writeInt16ToFile filePath valueToWrite
-    printfn "Successfully wrote %d to %s" valueToWrite filePath
+    fs.Seek(0L,SeekOrigin.Begin) |> ignore
+    let reader = new BinaryReader(fs)
+    let bytes = reader.ReadBytes(4)
+    printfn $"{bytesToHex bytes}"
+    
+
+    reader.Close()
+    fs.Close()
+
+    File.Delete(filePath)
+    // 4857 
+    ()
 
 main ()

@@ -1,0 +1,12 @@
+# >>>>>>>>>>>>> PROGRAM SEGMENT <<<<<<<<<<<<< 
+
+                # 54    INTENTION               INSTRUCTION         OPCODE
+B8 04 00 00 00  # 59    eax <- 4 (write)        mov r32, imm32      B8+rd id
+BB 01 00 00 00  # 5E    ebx <- 1 (stdout)
+B9 __ __ __ __  # 63    ecx <- buf
+BA 0A 00 00 00  # 68    edx <- count
+CD 80           # 6A    syscall                 int imm8            CD ib
+
+B8 01 00 00 00  # 6F    eax <- 1 (exit)
+BB 00 00 00 00  # 74    ebx <- 0 (param)
+CD 80           # 76    syscall

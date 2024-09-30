@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Compile Include="./header/FileHeader.fs" />
+    <Compile Include="./header/ProgramHeader.fs" />
     <Compile Include="Library.fs" />
   </ItemGroup>
 
