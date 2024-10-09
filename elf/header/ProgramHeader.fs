@@ -1,36 +1,54 @@
 module Elf.Header.ProgramHeader
 
+open System
+
 (*
     1 (0x1): X - Executable
     2 (0x2): W - Writable
     4 (0x4): R - Readable
 *)
-type PFlags = 
-    | X = 0x1UL
-    | W = 0x2UL
-    | R = 0x4UL
-    | XW = 0x3UL
-    | XR = 0x5UL
-    | WR = 0x6UL
-    | ALL = 0x7UL
+type PFlags =
+    | X = 0x1u
+    | W = 0x2u
+    | R = 0x4u
+    | XW = 0x3u
+    | XR = 0x5u
+    | WR = 0x6u
+    | ALL = 0x7u
 
-type PAlign = 
-    |X86 = 0x1000UL
+type PAlign =
+    | X86 = 0x1000UL
 
 type ProgramHeader =
-    { PType: uint64 option
-      POffset: uint64 option
-      PVAddr: uint64 option
-      PFileSize: uint64 option
-      PMemSize: int64 option
-      PFlags: PFlags option
+    { PType: uint32 option
+      mutable POffset: uint32 option
+      mutable PVAddr: uint32 option
+      mutable PAddr: uint32 option
+      mutable PFileSize: uint32 option
+      mutable PMemSize: uint32 option
+      mutable PFlags: PFlags option
       PAlign: PAlign option }
-    
-    static member make(?pType, ?pOffsetm, ?pVAddr, ?pFileSize, ?pMemSize, ?pFlags, ?pAlign) =
+
+    member this.Generator() =
+        let result = ResizeArray<byte>()
+        result.AddRange <| BitConverter.GetBytes(this.PType.Value)
+        result.AddRange <| BitConverter.GetBytes(this.POffset.Value)
+        result.AddRange <| BitConverter.GetBytes(this.PVAddr.Value)
+        result.AddRange <| BitConverter.GetBytes(this.PAddr.Value)
+        result.AddRange <| BitConverter.GetBytes(this.PFileSize.Value)
+        result.AddRange <| BitConverter.GetBytes(this.PMemSize.Value)
+        result.AddRange <| BitConverter.GetBytes(uint32 this.PFlags.Value)
+        result.AddRange <| BitConverter.GetBytes(uint32 this.PAlign.Value)
+        result
+
+    static member size() = 0x20u
+
+    static member make(?pType, ?pOffset, ?pVAddr, ?pAddr, ?pFileSize, ?pMemSize, ?pFlags, ?pAlign) =
         { PType = pType
-          POffset =  pOffsetm
+          POffset = pOffset
           PVAddr = pVAddr
+          PAddr = pAddr
           PFileSize = pFileSize
           PMemSize = pMemSize
           PFlags = pFlags
-          PAlign =  pAlign }
+          PAlign = pAlign }
